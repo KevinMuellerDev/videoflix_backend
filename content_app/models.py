@@ -1,3 +1,4 @@
+import os
 from django.db import models
 
 
@@ -10,3 +11,4 @@ class Video(models.Model):
 
     def __str__(self):
         return self.title
+    

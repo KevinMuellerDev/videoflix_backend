@@ -18,11 +18,19 @@ def video_post_save(sender, instance, created, **kwargs):
         print('New Video created')
         queue = django_rq.get_queue('default',autocommit=True)
         transaction.on_commit(lambda: queue.enqueue(convert_480p, instance.video_file.path))
-        #queue.enqueue(convert_480p,instance.video_file.path)
     
 @receiver(post_delete, sender=Video)
 def video_post_delete(sender,instance,**kwargs):
-    #video_file ist der ort wo das model die file speichert (ist im model definiert)
+
     if instance.video_file:
+        video_dir = os.path.dirname(instance.video_file.path)
+        original_video_name = os.path.basename(instance.video_file.name).split('.')[0]  # Der Name ohne Extension
+
+        for filename in os.listdir(video_dir):
+            if filename.startswith(original_video_name):
+                file_path = os.path.join(video_dir, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+
         if os.path.isfile(instance.video_file.path):
             os.remove(instance.video_file.path)
