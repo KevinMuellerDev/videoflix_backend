@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'content_app.apps.ContentAppConfig',
     'django_rq',
+    'import_export'
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
 ]
+
+IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 RQ_QUEUES = {
     'default': {
@@ -151,6 +154,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = 'static/'
 
