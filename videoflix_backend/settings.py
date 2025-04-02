@@ -44,8 +44,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'content_app.apps.ContentAppConfig',
     'django_rq',
-    'import_export'
+    'import_export',
+    'user_app'
 ]
+
+AUTH_USER_MODEL ='user_app.CustomUser'
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
