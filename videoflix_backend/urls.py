@@ -24,5 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('__debug__/',include('debug_toolbar.urls')),
     path('django-rq/', include('django_rq.urls')),
-    path('check-email/',CheckUserExists.as_view(),name='check_email')
+    path('check-email/',CheckUserExists.as_view(),name='check_email'),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

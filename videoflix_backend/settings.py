@@ -41,6 +41,8 @@ CORS_ALLOWED_ORIGINS = [
 INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,7 +103,7 @@ ROOT_URLCONF = 'videoflix_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -173,3 +175,36 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# EMAIL SERVICE DJOSER
+SITE_NAME = "http://localhost:3000"  
+DOMAIN = "localhost:3000"
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
+
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.sendgrid.net'  # oder SMTP-Anbieter deiner Wahl
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'apikey'  # oder dein SMTP-Benutzer
+# EMAIL_HOST_PASSWORD = 'dein-passwort-oder-apikey'
+# DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
+
+DJOSER = {
+    'SITE_NAME': 'Videoflix',
+    'DOMAIN': 'localhost:3000',
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'ACTIVATION_URL': 'activate?uid={uid}&token={token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'resetpassword?uid={uid}&token={token}',
+    'SERIALIZERS': {
+        'user_create': 'user_app.serializers.CustomUserCreateSerializer',
+        'user': 'user_app.serializers.CustomUserSerializer',
+        'current_user': 'user_app.serializers.CustomUserSerializer',
+    }
+}
+
