@@ -11,7 +11,7 @@
     <h2>Hello {{ user.username }},</h2>
     <p>You're receiving this email because you need to finish the activation process for your account.</p>
     <p>Please click the link below to activate your account:</p>
-    <a href="{{ activation_url }}">Activate your account</a>
+    <a href="{{ protocol }}://{{ domain }}/{{ url|safe }}">Activate your account</a>
     <p>Thanks for using our service!</p>
 </body>
 
