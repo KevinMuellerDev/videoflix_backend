@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'content_app.apps.ContentAppConfig',
-    'django_rq',
+    #'django_rq',
     'import_export',
     'user_app'
 ]
@@ -205,6 +205,7 @@ DJOSER = {
         'user_create': 'user_app.serializers.CustomUserCreateSerializer',
         'user': 'user_app.serializers.CustomUserSerializer',
         'current_user': 'user_app.serializers.CustomUserSerializer',
+        'password_reset_confirm':'user_app.serializers.CustomPasswordResetConfirmSerializer'
     }
 }
 
