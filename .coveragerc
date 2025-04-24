@@ -1,0 +1,14 @@
+# .coveragerc
+[run]
+source = .
+branch = True
+omit =
+    */migrations/*
+    */tests/*
+    manage.py
+    */__init__.py
+
+[report]
+fail_under = 80
+show_missing = True
+skip_covered = True
