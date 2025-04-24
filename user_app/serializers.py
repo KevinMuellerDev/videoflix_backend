@@ -24,6 +24,12 @@ class CustomUserSerializer(UserSerializer):
 class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     confirm_password = serializers.CharField(write_only=True)
 
+    def save(self, **kwargs):
+        password = self.validated_data["new_password"]
+        self.user.set_password(password)
+        self.user.save()
+        return self.user
+
     def validate(self, attrs):
         password = attrs.get("new_password")
         confirm_password = attrs.get("confirm_password")
