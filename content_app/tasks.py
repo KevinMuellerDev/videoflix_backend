@@ -50,14 +50,27 @@ def convert_to_hls(source, video_instance_id):
             m3u8.write(f'#EXT-X-STREAM-INF:BANDWIDTH={bitrate[:-1]}000,RESOLUTION={width}x{height}\n')
             m3u8.write(f'{name}/{filename}\n')
 
+    # === Trailer erstellen (z.B. 5 Sekunden) ===
+    trailer_path = os.path.join(output_dir, 'trailer.mp4')
+    trailer_cmd = f'ffmpeg -ss 00:00:00 -i "{source}" -t 5 -c:v libx264 -c:a aac "{trailer_path}"'
+    subprocess.run(trailer_cmd, shell=True, check=True)
+
+    # === Snapshot erstellen (z.B. bei 5 Sek.) ===
+    thumbnail_path = os.path.join(output_dir, 'thumbnail.jpg')
+    thumbnail_cmd = f'ffmpeg -ss 00:00:05 -i "{source}" -frames:v 1 "{thumbnail_path}"'
+    subprocess.run(thumbnail_cmd, shell=True, check=True)
+
     # Hole das Video-Objekt
     video_instance = Video.objects.get(pk=video_instance_id)
-    
-    # Berechne den relativen Pfad zum Master-Playlist
+
+    # Relativer Pfad zur Master-Playlist
     relative_master_playlist_path = os.path.relpath(master_playlist_path, settings.MEDIA_ROOT)
-    
-    # Speichere den relativen Pfad des Master-Playlists in der Datenbank
-    video_instance.video_file = relative_master_playlist_path  # Setze den relativen Pfad
+    relative_trailer_path = os.path.relpath(trailer_path,settings.MEDIA_ROOT)
+    relative_thumbnail_path = os.path.relpath(thumbnail_path, settings.MEDIA_ROOT)
+
+    video_instance.video_file = relative_master_playlist_path
+    video_instance.trailer = relative_trailer_path
+    video_instance.screenshot = relative_thumbnail_path
     video_instance.save()
 
     return master_playlist_path
