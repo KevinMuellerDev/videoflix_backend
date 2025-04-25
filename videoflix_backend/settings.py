@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'content_app.apps.ContentAppConfig',
-    #'django_rq',
+    'django_rq',
     'import_export',
     'user_app'
 ]

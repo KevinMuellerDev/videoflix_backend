@@ -1,15 +1,9 @@
-# # tasks um hochgeladene videos zu konvertieren !
-# import subprocess
-
-# def convert_480p(source):
-#     new_file_name = source.replace('.mp4', '') + '_480p.mp4'
-#     cmd = 'ffmpeg -i "{}" -s hd480 -c:v libx264 -crf 23 -c:a aac -strict -2 "{}"'.format(source, new_file_name)
-#     subprocess.run(cmd, shell=True)
-
 import os
 import subprocess
+from django.conf import settings
+from .models import Video
 
-def convert_to_hls(source):
+def convert_to_hls(source, video_instance_id):
     base_name = os.path.splitext(os.path.basename(source))[0]
     output_dir = os.path.splitext(source)[0] + '_hls'
     os.makedirs(output_dir, exist_ok=True)
@@ -25,6 +19,7 @@ def convert_to_hls(source):
 
     for rendition in renditions:
         name = rendition['name']
+        width, height = rendition['scale'].split(':')
         stream_path = os.path.join(output_dir, name)
         os.makedirs(stream_path, exist_ok=True)
 
@@ -33,7 +28,7 @@ def convert_to_hls(source):
 
         cmd = (
             f'ffmpeg -i "{source}" '
-            f'-vf "scale=w={rendition["scale"].split(":")[0]}:h={rendition["scale"].split(":")[1]}:force_original_aspect_ratio=decrease" '
+            f'-vf "scale=w={width}:h={height}:force_original_aspect_ratio=decrease,pad=w=ceil(iw/2)*2:h=ceil(ih/2)*2" '
             f'-c:a aac -ar 48000 -b:a 128k '
             f'-c:v h264 -profile:v main -crf 20 -sc_threshold 0 '
             f'-g 48 -keyint_min 48 '
@@ -49,7 +44,20 @@ def convert_to_hls(source):
     master_playlist_path = os.path.join(output_dir, 'master.m3u8')
     with open(master_playlist_path, 'w') as m3u8:
         m3u8.write('#EXTM3U\n')
-        for filename, bandwidth, name in playlist_filenames:
-            m3u8.write(f'#EXT-X-STREAM-INF:BANDWIDTH={bandwidth[:-1]}000,RESOLUTION={name[:-1]}\n')
+        for filename, bitrate, name in playlist_filenames:
+            scale = next(rendition for rendition in renditions if rendition['name'] == name)['scale']
+            width, height = scale.split(':')
+            m3u8.write(f'#EXT-X-STREAM-INF:BANDWIDTH={bitrate[:-1]}000,RESOLUTION={width}x{height}\n')
             m3u8.write(f'{name}/{filename}\n')
 
+    # Hole das Video-Objekt
+    video_instance = Video.objects.get(pk=video_instance_id)
+    
+    # Berechne den relativen Pfad zum Master-Playlist
+    relative_master_playlist_path = os.path.relpath(master_playlist_path, settings.MEDIA_ROOT)
+    
+    # Speichere den relativen Pfad des Master-Playlists in der Datenbank
+    video_instance.video_file = relative_master_playlist_path  # Setze den relativen Pfad
+    video_instance.save()
+
+    return master_playlist_path
