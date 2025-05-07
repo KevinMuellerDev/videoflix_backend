@@ -1,0 +1,55 @@
+/* roboto-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/staticfiles/fonts/roboto-v47-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  color: #535456;
+  font-size: 16px;
+}
+
+.mail-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 10px;
+}
+
+.vf-btn {
+  border: 0;
+  padding: 12px 24px;
+  border-radius: 40px;
+  background-color: #2e3edf;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  text-wrap: nowrap;
+  width: fit-content;
+  text-decoration: none;
+
+  &:hover {
+    cursor: pointer;
+    background-color: #404ee6;
+  }
+
+  &:active {
+    background-color: #1c28b0;
+  }
+}
+
+.center-logo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.greeting-text {
+  display: flex;
+  flex-direction: column;
+}
