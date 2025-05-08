@@ -202,10 +202,12 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': True,
     'EMAIL':{
-        'activation':'user_app.emails.CustomActivationEmail'
+        'activation':'user_app.emails.CustomActivationEmail',
+        'password_reset': 'user_app.emails.CustomResetPassword',
     },
     'SEND_ACTIVATION_EMAIL': True,
-    'SEND_CONFIRMATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION':False,
     'ACTIVATION_URL': 'activate?uid={uid}&token={token}',
     'PASSWORD_RESET_CONFIRM_URL': 'resetpassword?uid={uid}&token={token}',
     'SERIALIZERS': {
