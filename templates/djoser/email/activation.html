@@ -1,0 +1,62 @@
+{% load i18n %}
+{% block subject %}
+{% blocktrans %}Videoflix - Confirm your email{% endblocktrans %}
+{% endblock subject %}
+{% block html_body %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Activate your account{% endblock %}</title>
+</head>
+
+<body>
+  <section style="
+  font-family: sans-serif; 
+  color: #535456; 
+  font-size: 16px;">
+    <div style="      
+    width: 100%;
+    ">
+      <img style="display: block; margin: auto;" src="http://kevin-mueller-dev.de/assets/img/vf-logo.png"
+        alt="videoflix-logo">
+
+    </div>
+    <br>
+
+    <div class="greeting-text">
+      <span>Dear {{ user.username }},</span><br>
+      <span>{% blocktrans %}Thank you for registering with {{ site_name }}. To complete your registration and verify
+        your
+        email address, please click the link below:{% endblocktrans %}</span>
+    </div>
+    <br>
+    <p>
+      <a style="border: 0;
+      padding: 12px 24px;
+      border-radius: 40px;
+      background-color: #2e3edf;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 18px;
+      text-wrap: nowrap;
+      width: fit-content;
+      text-decoration: none;" href="{{ protocol }}://{{ domain }}/{{ url|safe }}" class="vf-btn">
+        {% trans "Activate Account" %}
+      </a>
+    </p>
+    <br>
+    <span>{% trans "If you did not create an account with us, please disregard this email." %}</span>
+    <br>
+    <br>
+    <span>{% trans "Best regards," %}</span>
+    <br>
+    <br>
+    <span>{% trans "Your Videoflix Team." %}</span>
+  </section>
+</body>
+
+</html>
+{% endblock html_body %}

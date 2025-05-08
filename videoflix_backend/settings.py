@@ -183,15 +183,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # EMAIL SERVICE DJOSER
 SITE_NAME = "http://localhost:3000"  
 DOMAIN = "localhost:3000"
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('HOST')
-EMAIL_PORT = 465  # Verwende Port 465 für SSL
+EMAIL_PORT = 465 
 EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True  # Verwende SSL statt TLS
+EMAIL_USE_SSL = True  
 EMAIL_HOST_USER = os.getenv('HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('HOST_USER')
@@ -201,6 +201,9 @@ DJOSER = {
     'DOMAIN': 'localhost:3000',
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': True,
+    'EMAIL':{
+        'activation':'user_app.emails.CustomActivationEmail'
+    },
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'ACTIVATION_URL': 'activate?uid={uid}&token={token}',
