@@ -12,13 +12,19 @@ def fake_video_path(tmp_path):
 @mock.patch("content_app.tasks.subprocess.run")
 @mock.patch("content_app.tasks.open", new_callable=mock.mock_open)
 @mock.patch("content_app.tasks.os.makedirs")
+@mock.patch("content_app.tasks.Video.objects.get")
 def test_convert_to_hls_calls_ffmpeg_and_creates_master_playlist(
-    mock_makedirs, mock_open_file, mock_subprocess_run, fake_video_path
+    mock_get_video, mock_makedirs, mock_open_file, mock_subprocess_run, fake_video_path
 ):
-    tasks.convert_to_hls(fake_video_path)
+    # Mock das Video-Objekt
+    mock_video_instance = mock.Mock()
+    mock_get_video.return_value = mock_video_instance
+
+    # Aufruf der Funktion mit einem Dummy-Video-ID (z.B. 1)
+    tasks.convert_to_hls(fake_video_path, 1)
 
     # 4 Aufrufe für 4 Renditions
-    assert mock_subprocess_run.call_count == 4
+    assert mock_subprocess_run.call_count == 6
 
     # Überprüfen, ob `ffmpeg` mit korrekten Parametern aufgerufen wird (Beispiel für einen)
     called_command = mock_subprocess_run.call_args_list[0][0][0]

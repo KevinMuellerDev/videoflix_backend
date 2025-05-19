@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from unittest import mock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,6 +10,7 @@ from django.core.files import File
 from django.test import override_settings
 
 from content_app.models import Video
+from content_app.signals import delete_folder_contents, delete_original_file, video_post_delete
 
 
 @pytest.mark.django_db
@@ -32,51 +34,40 @@ def test_video_post_save_triggers_conversion(mock_get_queue, mock_on_commit):
     args, _ = queue.enqueue.call_args
     assert video.video_file.path in args, "enqueue wurde nicht mit dem erwarteten Dateipfad aufgerufen"
 
-@pytest.mark.django_db
-@mock.patch("content_app.signals.convert_to_hls")
-@mock.patch("django_rq.get_queue")  
-def test_video_post_delete_removes_related_files(mock_get_queue, mock_convert_to_hls):
-    """
-    Sicherstellen, dass alle mit einem Video zusammenhängenden Dateien nach dem Löschen entfernt werden.
-    Dabei wird kein echter RQ Worker gestartet.
-    """
-    tmp_dir = tempfile.mkdtemp()
-    try:
-        original_basename = "sample"
-        video_filename = f"{original_basename}.mp4"
-        video_path = os.path.join(tmp_dir, video_filename)
-        with open(video_path, "wb") as f:
-            f.write(b"fake content")
 
-        related_files = [
-            os.path.join(tmp_dir, f"{original_basename}_hls.m3u8"),
-            os.path.join(tmp_dir, f"{original_basename}_hls_segment_001.ts"),
-            os.path.join(tmp_dir, f"{original_basename}_something_else.txt"),
-        ]
-        for path in related_files:
-            with open(path, "wb") as f:
-                f.write(b"related content")
-
-        with open(video_path, "rb") as f:
-            django_file = File(f, name=video_filename)
-            video = Video.objects.create(title="To Delete", video_file=django_file)
-
-        fake_queue = mock.Mock()
-        mock_get_queue.return_value = fake_queue
-
-        video.delete()
-
-        fake_queue.enqueue.assert_not_called()  
-
-        for path in [video_path] + related_files:
-            assert os.path.isfile(path), f"{path} sollte gelöscht worden sein"
-
-    finally:
-        
-        for path in [video_path] + related_files:
-            if os.path.isfile(path):
-                os.remove(path)
-        if os.path.isdir(tmp_dir):
-            os.rmdir(tmp_dir)
+@pytest.fixture
+def tmp_video_dir(tmp_path):
+    video_dir = tmp_path / 'test_video_hls'
+    video_dir.mkdir()
+    (video_dir / 'file1.txt').write_text('test')
+    (video_dir / 'file2.txt').write_text('test')
+    return video_dir
 
 
+def test_delete_folder_contents(tmp_video_dir):
+    delete_folder_contents(tmp_video_dir)
+    assert not os.path.exists(tmp_video_dir)
+
+
+def test_delete_original_file(tmp_path):
+    parent_dir = tmp_path
+    video_dir = parent_dir / 'test_video_hls'
+    video_dir.mkdir()
+    original_file = parent_dir / 'test_video.mp4'
+    original_file.touch()
+
+    delete_original_file(video_dir)
+    assert not original_file.exists()
+
+
+def test_video_post_delete(tmp_video_dir):
+    with patch('content_app.signals.os') as mock_os:
+        mock_instance = MagicMock()
+        mock_instance.video_file.path = str(tmp_video_dir / 'file1.txt')
+
+        video_post_delete(sender=Video, instance=mock_instance)
+
+        mock_os.path.isdir.assert_called()
+        mock_os.path.isfile.assert_called()
+        mock_os.remove.assert_called()
+        mock_os.rmdir.assert_called()

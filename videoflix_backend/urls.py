@@ -27,4 +27,5 @@ urlpatterns = [
     path('check-email/',CheckUserExists.as_view(),name='check_email'),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path('api/', include('content_app.api.urls'))
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
