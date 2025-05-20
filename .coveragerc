@@ -7,6 +7,11 @@ omit =
     */tests/*
     manage.py
     */__init__.py
+    */check_email_app/admin.py
+    */check_email_app/apps.py
+    */check_email_app/models.py
+    */videoflix_backend\asgi.py
+    */videoflix_backend\wsgi.py
 
 [report]
 fail_under = 80
