@@ -5,6 +5,7 @@ from django.db.models.signals import post_save, post_delete
 import os
 from .tasks import convert_to_hls
 import django_rq
+import shutil
 
 
 @receiver(post_save, sender=Video)
@@ -39,13 +40,11 @@ def video_post_delete(sender, instance, **kwargs):
         video_dir = os.path.dirname(instance.video_file.path)
 
         if os.path.isdir(video_dir):
-            for folder_name in os.listdir(video_dir):
-                folder_path = os.path.join(video_dir, folder_name)
-                if os.path.isdir(folder_path):
-                    delete_folder_contents(folder_path)
+            # sicheres rekursives Löschen des gesamten Ordners
+            shutil.rmtree(video_dir, ignore_errors=False)
 
-        if os.path.isfile(instance.video_file.path):
-            os.remove(instance.video_file.path)
-        os.rmdir(video_dir)
-
-        delete_original_file(video_dir=video_dir)
+        # Originaldatei löschen, falls noch vorhanden
+        try:
+            delete_original_file(video_dir=video_dir)
+        except FileNotFoundError:
+            pass

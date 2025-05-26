@@ -9,10 +9,10 @@ from .permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 # FOR LATER USE in decorator
 # contains the setting of the cache total lifetime defined in settings
-#CACHE_TTL = getattr(settings, 'CACHE_TTL',DEFAULT_TIMEOUT)
+CACHE_TTL = getattr(settings, 'CACHE_TTL',DEFAULT_TIMEOUT)
 
 
-#@method_decorator(cache_page(CACHE_TTL), name='dispatch')
+@method_decorator(cache_page(CACHE_TTL), name='dispatch')
 class VideoListView(ListAPIView):
     queryset=Video.objects.all()
     serializer_class=VideoListSerializer

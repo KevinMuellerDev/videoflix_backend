@@ -52,7 +52,7 @@ def convert_to_hls(source, video_instance_id):
 
     # === Trailer erstellen (z.B. 5 Sekunden) ===
     trailer_path = os.path.join(output_dir, 'trailer.mp4')
-    trailer_cmd = f'ffmpeg -ss 00:00:00 -i "{source}" -t 5 -c:v libx264 -c:a aac "{trailer_path}"'
+    trailer_cmd = f'ffmpeg -y -i "{source}" -ss 00:01:00 -t 5 -c:v libx264 -c:a aac "{trailer_path}"'
     subprocess.run(trailer_cmd, shell=True, check=True)
 
     # === Snapshot erstellen (z.B. bei 5 Sek.) ===
