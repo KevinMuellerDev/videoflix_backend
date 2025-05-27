@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost").split(",")
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", default="http://localhost:4200").split(",")
 
 INTERNAL_IPS=[
@@ -89,10 +89,10 @@ IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
+        'HOST': os.environ.get("REDIS_HOST", default="redis"),
+        'PORT': os.environ.get("REDIS_PORT", default=6379),
         'DB': 0,
-        'PASSWORD':'foobared',
+        #'PASSWORD':'foobared',
         'DEFAULT_TIMEOUT': 3600,
     }
 }
@@ -100,9 +100,9 @@ RQ_QUEUES = {
 CACHES = {
     "default":{
         "BACKEND":"django_redis.cache.RedisCache",
-        "LOCATION":"redis://127.0.0.1:6379/1",
+        "LOCATION":os.environ.get("REDIS_LOCATION",default="redis://redis:6379/1"),
         "OPTIONS":{
-            "PASSWORD":'foobared',
+            #"PASSWORD":'foobared',
             "CLIENT_CLASS": "django_redis.client.DefaultClient"
         },
         "KEY_PREFIX":"videoflix"
@@ -203,13 +203,13 @@ DOMAIN = "localhost:3000"
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = os.getenv("EMAIL_PORT") 
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL")
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT')) 
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False").lower() == "true"
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
 
 DJOSER = {
     'SITE_NAME': 'Videoflix',
