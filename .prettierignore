@@ -1,2 +1,3 @@
 templates/**/*.html
 *.html
+backend.entrypoint.sh
