@@ -10,7 +10,6 @@ from django.core.files import File
 from django.test import override_settings
 
 from content_app.models import Video
-from content_app.signals import delete_folder_contents, delete_original_file, video_post_delete
 
 
 @pytest.mark.django_db
