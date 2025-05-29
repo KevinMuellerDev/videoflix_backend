@@ -35,39 +35,65 @@ def test_video_post_save_triggers_conversion(mock_get_queue, mock_on_commit):
     assert video.video_file.path in args, "enqueue wurde nicht mit dem erwarteten Dateipfad aufgerufen"
 
 
-@pytest.fixture
-def tmp_video_dir(tmp_path):
-    video_dir = tmp_path / 'test_video_hls'
-    video_dir.mkdir()
-    (video_dir / 'file1.txt').write_text('test')
-    (video_dir / 'file2.txt').write_text('test')
-    return video_dir
+@pytest.mark.django_db
+@mock.patch("content_app.signals.delete_original_file")
+def test_video_post_delete_removes_video_directory(mock_delete_original_file):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        video_path = os.path.join(temp_dir, "test_video.mp4")
+        with open(video_path, "wb") as f:
+            f.write(b"dummy content")
+
+        uploaded = SimpleUploadedFile("videos/test_video.mp4", b"dummy content", content_type="video/mp4")
+
+        video = Video.objects.create(
+            title="Test Video",
+            description="Test description",
+            video_file=uploaded,
+            genre="Action"
+        )
+
+        video_dir = os.path.dirname(video.video_file.path)
+        os.makedirs(video_dir, exist_ok=True)
+
+        video.delete()
+
+        assert not os.path.exists(video_dir)
+        mock_delete_original_file.assert_called_once_with(video_dir=video_dir)
 
 
-def test_delete_folder_contents(tmp_video_dir):
-    delete_folder_contents(tmp_video_dir)
-    assert not os.path.exists(tmp_video_dir)
+@pytest.mark.django_db
+@mock.patch("content_app.signals.delete_original_file")
+def test_video_post_delete_when_no_video_file(mock_delete_original_file):
+    video = Video.objects.create(
+        title="No File",
+        description="No file present",
+        video_file=None,
+        genre="Drama"
+    )
+    video.delete()
+    mock_delete_original_file.assert_not_called()
 
 
-def test_delete_original_file(tmp_path):
-    parent_dir = tmp_path
-    video_dir = parent_dir / 'test_video_hls'
-    video_dir.mkdir()
-    original_file = parent_dir / 'test_video.mp4'
-    original_file.touch()
+@pytest.mark.django_db
+@mock.patch("content_app.signals.delete_original_file", side_effect=FileNotFoundError)
+def test_video_post_delete_handles_missing_original_file(mock_delete_original_file):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        dummy_file = os.path.join(temp_dir, "test_video.mp4")
+        with open(dummy_file, "wb") as f:
+            f.write(b"dummy content")
 
-    delete_original_file(video_dir)
-    assert not original_file.exists()
+        uploaded = SimpleUploadedFile("videos/test_video.mp4", b"dummy content", content_type="video/mp4")
 
+        video = Video.objects.create(
+            title="FileNotFound Test",
+            description="Expecting missing file",
+            video_file=uploaded,
+            genre="Comedy"
+        )
 
-def test_video_post_delete(tmp_video_dir):
-    with patch('content_app.signals.os') as mock_os:
-        mock_instance = MagicMock()
-        mock_instance.video_file.path = str(tmp_video_dir / 'file1.txt')
+        video_dir = os.path.dirname(video.video_file.path)
+        os.makedirs(video_dir, exist_ok=True)
 
-        video_post_delete(sender=Video, instance=mock_instance)
+        video.delete()
 
-        mock_os.path.isdir.assert_called()
-        mock_os.path.isfile.assert_called()
-        mock_os.remove.assert_called()
-        mock_os.rmdir.assert_called()
+        mock_delete_original_file.assert_called_once_with(video_dir=video_dir)
