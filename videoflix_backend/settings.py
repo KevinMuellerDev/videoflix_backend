@@ -30,9 +30,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost").split(",")
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", default="http://localhost:4200").split(",")
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", default="http://localhost:3000").split(",")
 
-INTERNAL_IPS=[
+INTERNAL_IPS = [
     '127.0.0.1'
 ]
 
@@ -60,7 +61,7 @@ INSTALLED_APPS = [
     'user_app'
 ]
 
-AUTH_USER_MODEL ='user_app.CustomUser'
+AUTH_USER_MODEL = 'user_app.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -82,7 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+
 ]
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
@@ -92,24 +93,24 @@ RQ_QUEUES = {
         'HOST': os.environ.get("REDIS_HOST", default="redis"),
         'PORT': os.environ.get("REDIS_PORT", default=6379),
         'DB': 0,
-        #'PASSWORD':'foobared',
+        # 'PASSWORD':'foobared',
         'DEFAULT_TIMEOUT': 3600,
     }
 }
 
 CACHES = {
-    "default":{
-        "BACKEND":"django_redis.cache.RedisCache",
-        "LOCATION":os.environ.get("REDIS_LOCATION",default="redis://redis:6379/1"),
-        "OPTIONS":{
-            #"PASSWORD":'foobared',
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_LOCATION", default="redis://redis:6379/1"),
+        "OPTIONS": {
+            # "PASSWORD":'foobared',
             "CLIENT_CLASS": "django_redis.client.DefaultClient"
         },
-        "KEY_PREFIX":"videoflix"
+        "KEY_PREFIX": "videoflix"
     }
 }
 
-#Cache dauer TOTAL LIFETIME
+# Cache dauer TOTAL LIFETIME
 CACHE_TTL = 60 * 15
 
 ROOT_URLCONF = 'videoflix_backend.urls'
@@ -130,8 +131,8 @@ TEMPLATES = [
     },
 ]
 
-MEDIA_ROOT= os.path.join(BASE_DIR,'media')
-MEDIA_URL='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 WSGI_APPLICATION = 'videoflix_backend.wsgi.application'
 
@@ -196,15 +197,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # EMAIL SERVICE DJOSER
-SITE_NAME = "http://localhost:3000"  
+SITE_NAME = "http://localhost:3000"
 DOMAIN = "localhost:3000"
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-#DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# DEFAULT_FROM_EMAIL = 'noreply@videoflix.com'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT')) 
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
 EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False").lower() == "true"
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
@@ -216,20 +217,19 @@ DJOSER = {
     'DOMAIN': 'localhost:3000',
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': True,
-    'EMAIL':{
-        'activation':'user_app.emails.CustomActivationEmail',
+    'EMAIL': {
+        'activation': 'user_app.emails.CustomActivationEmail',
         'password_reset': 'user_app.emails.CustomResetPassword',
     },
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': False,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION':False,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
     'ACTIVATION_URL': 'activate?uid={uid}&token={token}',
     'PASSWORD_RESET_CONFIRM_URL': 'resetpassword?uid={uid}&token={token}',
     'SERIALIZERS': {
         'user_create': 'user_app.serializers.CustomUserCreateSerializer',
         'user': 'user_app.serializers.CustomUserSerializer',
         'current_user': 'user_app.serializers.CustomUserSerializer',
-        'password_reset_confirm':'user_app.serializers.CustomPasswordResetConfirmSerializer'
+        'password_reset_confirm': 'user_app.serializers.CustomPasswordResetConfirmSerializer'
     }
 }
-

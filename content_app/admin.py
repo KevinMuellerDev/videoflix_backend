@@ -6,14 +6,14 @@ from django.conf import settings
 import os
 import json
 from import_export.admin import ImportExportModelAdmin
-# Register your models here.
-class VideoResource(resources.ModelResource):
 
+
+class VideoResource(resources.ModelResource):
     class Meta:
-        model=Video
+        model = Video
 
     def export_video_data_to_json(self):
-        dataset=self.export()
+        dataset = self.export()
         data = json.loads(dataset.json)
 
         backup_dir = os.path.join(settings.BASE_DIR, "backup/videos")
@@ -25,7 +25,7 @@ class VideoResource(resources.ModelResource):
 
         return file_path
 
-        
+
 @admin.register(Video)
 class VideoAdmin(ImportExportModelAdmin):
     actions = ["export_videos_to_json"]
@@ -33,8 +33,13 @@ class VideoAdmin(ImportExportModelAdmin):
     def export_videos_to_json(self, request, queryset):
         resource = VideoResource()
         file_path = resource.export_video_data_to_json()
-
-        self.message_user(request, f"Export erfolgreich! Datei gespeichert unter: {file_path}")
+        self.message_user(
+            request, f"Export erfolgreich! Datei gespeichert unter: {file_path}")
 
     export_videos_to_json.short_description = "Videos als JSON exportieren"
 
+    def get_fields(self, request, obj=None):
+        if obj:  # Bearbeiten
+            return ['title', 'description', 'video_file', 'trailer', 'screenshot', 'genre']
+        # Beim Anlegen
+        return ['title', 'description', 'video_file', 'genre']

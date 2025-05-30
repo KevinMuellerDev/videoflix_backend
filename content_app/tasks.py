@@ -1,7 +1,9 @@
 import os
 import subprocess
 from django.conf import settings
+from django.core.cache import cache
 from .models import Video
+
 
 def convert_to_hls(source, video_instance_id):
     base_name = os.path.splitext(os.path.basename(source))[0]
@@ -9,10 +11,14 @@ def convert_to_hls(source, video_instance_id):
     os.makedirs(output_dir, exist_ok=True)
 
     renditions = [
-        {'name': '240p', 'scale': '426:240', 'bitrate': '400k',  'maxrate': '450k',  'bufsize': '600k'},
-        {'name': '480p', 'scale': '854:480', 'bitrate': '800k',  'maxrate': '856k',  'bufsize': '1200k'},
-        {'name': '720p', 'scale': '1280:720','bitrate': '1400k', 'maxrate': '1498k', 'bufsize': '2100k'},
-        {'name': '1080p','scale': '1920:1080','bitrate': '3000k','maxrate': '3210k', 'bufsize': '4500k'}
+        {'name': '240p', 'scale': '426:240', 'bitrate': '400k',
+            'maxrate': '450k',  'bufsize': '600k'},
+        {'name': '480p', 'scale': '854:480', 'bitrate': '800k',
+            'maxrate': '856k',  'bufsize': '1200k'},
+        {'name': '720p', 'scale': '1280:720', 'bitrate': '1400k',
+            'maxrate': '1498k', 'bufsize': '2100k'},
+        {'name': '1080p', 'scale': '1920:1080', 'bitrate': '3000k',
+            'maxrate': '3210k', 'bufsize': '4500k'}
     ]
 
     playlist_filenames = []
@@ -24,7 +30,8 @@ def convert_to_hls(source, video_instance_id):
         os.makedirs(stream_path, exist_ok=True)
 
         playlist_filename = f"{name}.m3u8"
-        playlist_filenames.append((playlist_filename, rendition['bitrate'], name))
+        playlist_filenames.append(
+            (playlist_filename, rendition['bitrate'], name))
 
         cmd = (
             f'ffmpeg -i "{source}" '
@@ -45,32 +52,38 @@ def convert_to_hls(source, video_instance_id):
     with open(master_playlist_path, 'w') as m3u8:
         m3u8.write('#EXTM3U\n')
         for filename, bitrate, name in playlist_filenames:
-            scale = next(rendition for rendition in renditions if rendition['name'] == name)['scale']
+            scale = next(
+                rendition for rendition in renditions if rendition['name'] == name)['scale']
             width, height = scale.split(':')
-            m3u8.write(f'#EXT-X-STREAM-INF:BANDWIDTH={bitrate[:-1]}000,RESOLUTION={width}x{height}\n')
+            m3u8.write(
+                f'#EXT-X-STREAM-INF:BANDWIDTH={bitrate[:-1]}000,RESOLUTION={width}x{height}\n')
             m3u8.write(f'{name}/{filename}\n')
 
     # === Trailer erstellen (z.B. 5 Sekunden) ===
     trailer_path = os.path.join(output_dir, 'trailer.mp4')
-    trailer_cmd = f'ffmpeg -y -i "{source}" -ss 00:01:00 -t 5 -c:v libx264 -c:a aac "{trailer_path}"'
+    trailer_cmd = f'ffmpeg -y -i "{source}" -ss 00:00:05 -t 5 -c:v libx264 -c:a aac "{trailer_path}"'
     subprocess.run(trailer_cmd, shell=True, check=True)
 
     # === Snapshot erstellen (z.B. bei 5 Sek.) ===
     thumbnail_path = os.path.join(output_dir, 'thumbnail.jpg')
-    thumbnail_cmd = f'ffmpeg -ss 00:00:05 -i "{source}" -frames:v 1 "{thumbnail_path}"'
+    thumbnail_cmd = f'ffmpeg -ss 00:00:01 -i "{source}" -frames:v 1 "{thumbnail_path}"'
     subprocess.run(thumbnail_cmd, shell=True, check=True)
 
     # Hole das Video-Objekt
     video_instance = Video.objects.get(pk=video_instance_id)
 
     # Relativer Pfad zur Master-Playlist
-    relative_master_playlist_path = os.path.relpath(master_playlist_path, settings.MEDIA_ROOT)
-    relative_trailer_path = os.path.relpath(trailer_path,settings.MEDIA_ROOT)
-    relative_thumbnail_path = os.path.relpath(thumbnail_path, settings.MEDIA_ROOT)
+    relative_master_playlist_path = os.path.relpath(
+        master_playlist_path, settings.MEDIA_ROOT)
+    relative_trailer_path = os.path.relpath(trailer_path, settings.MEDIA_ROOT)
+    relative_thumbnail_path = os.path.relpath(
+        thumbnail_path, settings.MEDIA_ROOT)
 
     video_instance.video_file = relative_master_playlist_path
     video_instance.trailer = relative_trailer_path
     video_instance.screenshot = relative_thumbnail_path
     video_instance.save()
+    # Löschen des Redis cache
+    cache.clear()
 
     return master_playlist_path
